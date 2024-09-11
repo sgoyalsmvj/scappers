@@ -3781,3 +3781,25 @@ export const countryToLanguage = {
   Zambia: ["English"],
   Zimbabwe: ["English", "Shona", "Sindebele"],
 };
+
+export function getCountriesByLanguage(languages) {
+  if(!languages){
+    return null;
+  }
+  const countries = [];
+  for (const country in countryToLanguage) {
+    if (countryToLanguage.hasOwnProperty(country)) {
+      const countryLanguages = countryToLanguage[country];
+      for (const language of languages) {
+        if (countryLanguages.includes(language)) {
+          if (!countries.includes(country)) {
+            countries.push(country);
+          }
+        }
+      }
+    }
+  }
+  return countries;
+}
+
+

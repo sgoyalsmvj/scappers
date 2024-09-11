@@ -1,3 +1,9 @@
 node_modules
 /foreplay/variables.js
 /adnova/variables.js
+/foreplay/adsData.json
+/adnova/adsData.json
+/foreplay/downloadfinal.txt
+/adnova/downloadfinal.txt
+/adnova/state.json
+/foreplay/state.json

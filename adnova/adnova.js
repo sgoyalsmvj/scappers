@@ -258,7 +258,7 @@ function mapNewData(newData, category, major_theme) {
         : null,
       platforms: newData.publisher_platform || [], // Ensure it's an array
       body: asset.body || null,
-      caption: null,
+      caption: asset.caption || null,
       cta_type: asset.cta_type || null,
       cta_text: asset.cta_text || null,
       link_url: asset.link_url || null,
@@ -275,22 +275,20 @@ function mapNewData(newData, category, major_theme) {
     ad_display_format: newData.display_format?.toLowerCase() || null,
     analysis: null, // Ensure proper formatting for JSON
     s3_image_url:
-      (newData.display_format === "image" && replaceUrls(asset.mediaKey)) ||
+      (asset?.mime?.split('/')[0] === "image" && replaceUrls(asset.mediaKey)) ||
       null,
     s3_video_url:
-      (newData.display_format === "video" && replaceUrls(asset.mediaKey)) ||
+      (asset?.mime?.split('/')[0] === "video" && replaceUrls(asset.mediaKey)) ||
       null,
-    ad_image: null,
-    ad_video: null,
+    ad_image: validateAndStringifyJson(asset),
+    ad_video: validateAndStringifyJson(asset),
     category: category || null,
     language: null,
     theme: null,
-    created_at: newData.createdAt
-      ? new Date(newData.createdAt).toISOString()
-      : null,
+    created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     likes: newData.likes || null,
-    preview_image_url: replaceUrls(asset.thumbnailKey) || null,
+    preview_image_url: null,
     title: asset.title || null,
     video_len: asset.size || null,
     saved_details: null,
