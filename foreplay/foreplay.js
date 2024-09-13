@@ -1,5 +1,10 @@
 import { v4 as uuidv4 } from "uuid";
-import { countryList, countryToLanguage, dataList, getCountriesByLanguage } from "../datalist.js";
+import {
+  countryList,
+  countryToLanguage,
+  dataList,
+  getCountriesByLanguage,
+} from "../datalist.js";
 import fs from "fs";
 import pkg from "pg"; // Updated pg import to handle CommonJS module
 import { awsConfig, s3Config, dbConfig } from "./variables.js";
@@ -174,7 +179,7 @@ const foreplay = async (textSearch, next) => {
         return foreplay(textSearch, next); // Retry with new token
       }
     }
-    console.log("Fetched data");
+    console.log("Fetched data", data);
     return { adsdata: data.results, next: data.nextPage };
   } catch (error) {
     console.error("Error fetching data:", error);
@@ -303,7 +308,6 @@ function mapNewData(newData, category, major_theme) {
     }
     return null;
   };
-  console.log(newData.languages);
   console.log("Mapping data");
   return {
     id: uuidv4(),
@@ -317,7 +321,9 @@ function mapNewData(newData, category, major_theme) {
       website_url: newData.link_url || null,
     }),
     ad_external_link: newData.link_url || null,
-    country: getCountriesByLanguage(newData?.languages)?  formatArrayForPostgres(getCountriesByLanguage(newData?.languages)): null,
+    country: getCountriesByLanguage(newData?.languages)
+      ? formatArrayForPostgres(getCountriesByLanguage(newData?.languages))
+      : null,
     ad: validateAndStringifyJson({
       id: newData.ad_id?.toString() || null,
       display_format: newData.display_format || null,
@@ -395,22 +401,27 @@ const main = async () => {
           const batch = adsdata.map((ad) =>
             mapNewData(ad, category, major_theme)
           );
-          
+
           // Write the batch to a JSON file
           writeBatchToFile(batch);
           console.log(`Saved ${batch.length} ads to the file`);
-          // if (batch.length > 0) {
-          //   await saveBatchToDatabase(batch);
-          //   console.log(
-          //     `Saved ${batch.length} ads to the database for major theme: ${major_theme}`
-          //   );
-          // }
-          console.log("Next page:", next);
+
+          if (batch.length > 0) {
+            await saveBatchToDatabase(batch);
+            console.log(
+              `Saved ${batch.length} ads to the database for major theme: ${major_theme}`
+            );
+          }
           nextPage = next; // Update nextPage for pagination
-          hasMoreData = nextPage ? true : false; // Check if more data is available
         } else {
-          hasMoreData = false;
+          console.log(
+            `No data found for major theme: ${major_theme}, stopping further calls.`
+          );
+          nextPage = null; // Clear the nextPage
+          hasMoreData = false; // Stop further API calls
         }
+
+        hasMoreData = nextPage ? true : false; // Check if more data is available
       }
 
       saveState(i); // Save current state
